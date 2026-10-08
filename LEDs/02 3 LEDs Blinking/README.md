@@ -15,8 +15,6 @@ Simple LED Test project with ESP32 Development Board for three blinking LEDs in 
 
 ![Schematic](Hardware/3_LEDs_blinking.png)
 
-## Media
-[▶️ Video](Media/3 LEDs blinking.mp4)
 
 
 ## Code (`src/main.cpp`)

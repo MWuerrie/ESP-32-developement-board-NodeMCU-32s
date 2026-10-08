@@ -7,6 +7,7 @@ A two-player online Pong game with a physical scoreboard. The game runs over a p
 
 * **IDE:** VS Code with extension **PlatformIO IDE**.
 * **Framework:** Arduino
+
 * **Hardware:** 
 - ESP32 Development Board (NodeMCU ESP32)
 - 4-digit 7-segment display (3641AS)
@@ -15,9 +16,8 @@ A two-player online Pong game with a physical scoreboard. The game runs over a p
 - 10 resistors 220 Ohm
 
 ## Schematic 
-===================================================================
 COMPLETE WIRING DIAGRAM: ESP32 + SN74HC595N + 4-DIGIT DISPLAY + OLED + 2 LEDs
-===================================================================
+
 System Voltage: 3.3V (Safe operation for ESP32 and shift register)
 
 POWER SUPPLY NOTE:
@@ -28,13 +28,17 @@ Use the long lateral power rails (+ and -) of your breadboard.
 -------------------------------------------------------------------
 1. CONNECTING THE SHIFT REGISTER (SN74HC595N)
 -------------------------------------------------------------------
-IC Pin 8 (GND)       -> Negative rail (-) [Ground]
-IC Pin 10 (/MR)      -> Positive rail (+)  [Master Reset disabled]
-IC Pin 11 (SHCP)     -> ESP32 GPIO 22     [Shift Register Clock]
-IC Pin 12 (STCP)     -> ESP32 GPIO 21      [Storage Register Clock / Latch]
-IC Pin 13 (/OE)      -> Negative rail (-) [Output Enable permanently active]
-IC Pin 14 (DS)       -> ESP32 GPIO 23     [Serial Data Input / Data Line]
-IC Pin 16 (VCC)      -> Positive rail (+)  [3.3V Power Supply]
+
+| IC Pin | Signal | Connection | Description |
+|---:|---|---|---|
+| 8  | GND  | Negative rail (-) | Ground |
+| 10 | /MR  | Positive rail (+) | Master Reset disabled |
+| 11 | SHCP | ESP32 GPIO 22 | Shift Register Clock |
+| 12 | STCP | ESP32 GPIO 21 | Storage Register Clock / Latch |
+| 13 | /OE  | Negative rail (-) | Output Enable permanently active |
+| 14 | DS   | ESP32 GPIO 23 | Serial Data Input / Data Line |
+| 16 | VCC  | Positive rail (+) | 3.3V Power Supply |
+
 
 -------------------------------------------------------------------
 2. SHIFT REGISTER (OUTPUTS) TO 7-SEGMENT DISPLAY (SEGMENTS)
@@ -42,14 +46,16 @@ IC Pin 16 (VCC)      -> Positive rail (+)  [3.3V Power Supply]
 * Important: Each segment requires its own 220 Ohm current-limiting resistor!
 * Connect each resistor between the IC pin and the corresponding display pin.
 
-IC Pin 15 (Q0) -> [220 Ohm Resistor] -> Segment A
-IC Pin 1  (Q1) -> [220 Ohm Resistor] -> Segment B
-IC Pin 2  (Q2) -> [220 Ohm Resistor] -> Segment C
-IC Pin 3  (Q3) -> [220 Ohm Resistor] -> Segment D
-IC Pin 4  (Q4) -> [220 Ohm Resistor] -> Segment E
-IC Pin 5  (Q5) -> [220 Ohm Resistor] -> Segment F
-IC Pin 6  (Q6) -> [220 Ohm Resistor] -> Segment G
-IC Pin 7  (Q7) -> [220 Ohm Resistor] -> Decimal Point (DP)
+| IC Pin | Output | Connection | Display Segment |
+|---:|---|---|---|
+| 15 | Q0 | 220 Ω resistor | Segment A |
+| 1 | Q1 | 220 Ω resistor | Segment B |
+| 2 | Q2 | 220 Ω resistor | Segment C |
+| 3 | Q3 | 220 Ω resistor | Segment D |
+| 4 | Q4 | 220 Ω resistor | Segment E |
+| 5 | Q5 | 220 Ω resistor | Segment F |
+| 6 | Q6 | 220 Ω resistor | Segment G |
+| 7 | Q7 | 220 Ω resistor | Decimal Point (DP) |
 
 -------------------------------------------------------------------
 3. ESP32 TO 7-SEGMENT DISPLAY (DIGITS)
@@ -57,18 +63,23 @@ IC Pin 7  (Q7) -> [220 Ohm Resistor] -> Decimal Point (DP)
 * These pins control the 4 individual digits via multiplexing.
 * Connect directly (without resistor).
 
-ESP32 GPIO 14 -> Digit 1 (far left digit)
-ESP32 GPIO 27 -> Digit 2
-ESP32 GPIO 26 -> Digit 3
-ESP32 GPIO 25 -> Digit 4 (far right digit)
+| ESP32 GPIO | Display Connection | Description |
+|---:|---|---|
+| GPIO 14 | Digit 1 | Far left digit |
+| GPIO 27 | Digit 2 | — |
+| GPIO 26 | Digit 3 | — |
+| GPIO 25 | Digit 4 | Far right digit |
+
 
 -------------------------------------------------------------------
 4. OLED DISPLAY
 -------------------------------------------------------------------
-GND        -> Negative rail (-) [Ground]
-VCC/VDD    -> Positive rail (+)  [3.3V Power Supply]
-SCK        -> GPIO 32 
-SDA        -> GPIO 33
+| OLED Pin | ESP32 Connection | Description |
+|---|---|---|
+| GND | Negative rail (-) | Ground |
+| VCC / VDD | Positive rail (+) | 3.3 V Power Supply |
+| SCK | GPIO 32 | Clock |
+| SDA | GPIO 33 | Data |
 
 -------------------------------------------------------------------
 5. ADDITIONAL LEDS ON THE ESP32
@@ -87,9 +98,10 @@ LED 2:
 
 ![Schematic](../Hardware/displays.png)
 
+
 ## Media
 
-[▶️ Video](Media/Online Pong.mp4)
+[▶️ Video](Media/Online_Pong.mp4)
 
 
 
@@ -267,8 +279,6 @@ All messages are JSON objects, one per line (newline-delimited).
 - **ESP32 stays on "Connecting to WiFi...":** check SSID and password, make sure the network offers 2.4 GHz, and try a different USB cable or port.
 - **Client cannot connect to the server:** check that Tailscale is connected on both PCs (`tailscale ping <address>`), that `server.py` is running, and that port 5000 is allowed in the server PC's firewall.
 - **ESP32 IP is not shown anymore:** it is only displayed on the waiting screen. You can also read it from the serial monitor after a reset or from your router.
-
-## Media 
 
 
 

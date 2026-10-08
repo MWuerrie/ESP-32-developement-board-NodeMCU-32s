@@ -18,8 +18,6 @@ This would nbot be possible with the delay() command.
 
 ![Schematic](Hardware/3_LEDs_blinking_2_LEDs_Button.png)git
 
-## Media
-[▶️ Video](Media/3 LEDs blinking sequence + 2 LEDs switch.mp4)
 
 
 ## Code (`src/main.cpp`)

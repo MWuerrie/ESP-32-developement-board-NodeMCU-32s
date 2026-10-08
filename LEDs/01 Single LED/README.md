@@ -15,8 +15,6 @@ Simple first LED Test project with ESP32 Development Board for a blinking single
 
 ![Schematic](Hardware/SINGLE_LED.png)
 
-## Media
-[▶️ Video](Media/Single LED blinking.mp4)
 
 ## Code (`src/main.cpp`)
 
