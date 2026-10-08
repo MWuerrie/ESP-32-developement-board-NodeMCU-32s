@@ -1,0 +1,258 @@
+# ESP32 TCP Calculator
+
+A small calculator project demonstrating **TCP communication between Python and an ESP32**.
+
+The Python program acts as the **TCP client** and performs the calculation. The ESP32 acts as the **TCP server** and receives the numbers, operator, and final result.
+
+The result is displayed on a 4-digit 7-segment display and additionally on an OLED display.
+
+This project was developed as a learning project and as a prototype for a later IoT application.
+
+---
+
+## Features
+
+* Wi-Fi communication between Python and ESP32
+* TCP client/server communication
+* Addition, subtraction, multiplication and division
+* Input validation on the Python side
+* 4-digit 7-segment display output
+* Newline-delimited application messages
+* TCP acknowledgement (`OK`) from ESP32
+* ESP32 OLED display support
+
+---
+
+## System Overview
+
+```text
+┌──────────────────────┐
+│        Python        │
+│                      │
+│  TCP Client          │
+│  User Input          │
+│  Calculation         │
+└──────────┬───────────┘
+           │
+           │ TCP / Wi-Fi
+           │
+           ▼
+┌──────────────────────┐
+│        ESP32         │
+│                      │
+│  TCP Server          │
+│  Message Processing  │
+│  Display Control     │
+└───────┬───────┬──────┘
+        │       │
+        ▼       ▼
+   7-Segment   OLED
+    Display   Display
+```
+
+The calculation itself is performed by **Python**. The ESP32 is responsible for receiving the data and controlling the hardware displays.
+
+---
+
+## Communication Protocol
+
+The communication uses TCP over Wi-Fi.
+
+Messages are sent as newline-terminated strings:
+
+```text
+first number
+656
+operator? (+,-,*,/)
++
+second number
+878
+result:1534
+```
+
+The newline character (`\n`) is used to separate individual application messages.
+
+### Example
+
+For the calculation:
+
+```text
+656 + 878 = 1534
+```
+
+Python sends:
+
+```text
+first number
+656
+operator? (+,-,*,/)
++
+second number
+878
+result:1534
+```
+
+The ESP32 receives and processes these messages sequentially.
+
+---
+
+## Acknowledgement
+
+After receiving the final result, the ESP32 sends an acknowledgement:
+
+```text
+OK
+```
+
+Python waits for this response before closing the TCP connection.
+
+```text
+Python                         ESP32
+   │                              │
+   │  result:1534 ──────────────→ │
+   │                              │
+   │                         processes result
+   │                              │
+   │       ←─────────────── OK    │
+   │                              │
+   │  closes connection           │
+   ▼                              ▼
+```
+
+This avoids relying on an arbitrary delay such as `time.sleep()` to give the ESP32 time to process the final message.
+
+---
+
+## Hardware
+
+### ESP32
+
+* NodeMCU-32S / ESP32
+* Wi-Fi
+* TCP server
+
+### 4-Digit 7-Segment Display
+
+* 3641AS
+* Common-anode
+* Controlled through an SN74HC595N shift register
+
+### OLED
+
+* 128 × 64 OLED
+* I²C
+* Address: `0x3C`
+
+The OLED can be used to display additional information, for example:
+
+```text
+656 + 878 = 1534
+```
+
+---
+
+## Pin Configuration
+
+| Component     | ESP32 GPIO |
+| ------------- | ---------: |
+| 74HC595 Data  |    GPIO 23 |
+| 74HC595 Clock |    GPIO 22 |
+| 74HC595 Latch |    GPIO 21 |
+| Digit 1       |    GPIO 14 |
+| Digit 2       |    GPIO 27 |
+| Digit 3       |    GPIO 26 |
+| Digit 4       |    GPIO 25 |
+| LED 1         |    GPIO 19 |
+| LED 2         |    GPIO 18 |
+| OLED SDA      |    GPIO 33 |
+| OLED SCL      |    GPIO 32 |
+
+---
+
+## Software
+
+### Python
+
+* Python 3
+* Standard library `socket`
+
+### ESP32
+
+* PlatformIO
+* Arduino framework
+* ESP32 Wi-Fi library
+* Adafruit GFX
+* Adafruit SSD1306
+
+---
+
+## How It Works
+
+1. Python connects to the ESP32 using TCP.
+2. Python sends a request for the first number.
+3. The user enters the first number.
+4. Python sends the number to the ESP32.
+5. Python requests the operator.
+6. The user selects `+`, `-`, `*` or `/`.
+7. Python sends the operator to the ESP32.
+8. Python requests the second number.
+9. The user enters the second number.
+10. Python performs the calculation.
+11. Python sends the final result to the ESP32.
+12. The ESP32 displays the result.
+13. The ESP32 sends `OK`.
+14. Python receives `OK` and closes the connection.
+
+---
+
+## Example
+
+Input:
+
+```text
+First number: 656
+Operator (+,-,*,/): +
+Second number: 878
+```
+
+Python calculates:
+
+```text
+656 + 878 = 1534
+```
+
+The ESP32 receives:
+
+```text
+result:1534
+```
+
+The 7-segment display shows:
+
+```text
+1534
+```
+
+The ESP32 then responds:
+
+```text
+OK
+```
+
+---
+
+## Project Purpose
+
+This project is a small practical exercise for learning:
+
+* Python networking
+* TCP/IP communication
+* Client-server architecture
+* ESP32 programming
+* Wi-Fi communication
+* Simple application-layer protocols
+* Message parsing
+* Hardware display control
+* Acknowledgement mechanisms
+
+The project also serves as a prototype for integrating an ESP32 into a larger IoT application.

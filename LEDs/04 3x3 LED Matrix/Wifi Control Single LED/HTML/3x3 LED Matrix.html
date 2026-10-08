@@ -1,0 +1,334 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ESP32 Matrix Controller</title>
+
+<!-- MQTT.js -->
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+
+    /* ============================================
+       General Layout
+       ============================================ */
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: white;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        height: 100vh;
+        margin: 0;
+    }
+
+    h1 {
+        color: #00adb5;
+    }
+
+
+    /* ============================================
+       MQTT Status
+       ============================================ */
+
+    .status {
+        margin-bottom: 20px;
+        padding: 5px 15px;
+
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+
+    .connected {
+        background-color: #2e7d32;
+    }
+
+    .disconnected {
+        background-color: #c62828;
+    }
+
+
+    /* ============================================
+       LED Matrix
+       ============================================ */
+
+    .matrix {
+        display: grid;
+
+        grid-template-columns: repeat(3, 80px);
+        gap: 15px;
+
+        background-color: #222831;
+        padding: 20px;
+
+        border-radius: 10px;
+    }
+
+
+    /* ============================================
+       LED Base Style
+       ============================================ */
+
+    .led {
+        width: 80px;
+        height: 80px;
+
+        border-radius: 50%;
+        border: 2px solid #121212;
+
+        cursor: pointer;
+
+        transition:
+            background-color 0.2s,
+            box-shadow 0.2s;
+    }
+
+
+    /* ============================================
+       Row Colors
+       ============================================ */
+
+    /* Row 0 - Green */
+    .row-green {
+        background-color: #1b5e20;
+    }
+
+    .row-green:hover {
+        background-color: #2e7d32;
+    }
+
+    .row-green.active {
+        background-color: #00e676;
+        box-shadow: 0 0 20px #00e676;
+    }
+
+
+    /* Row 1 - Yellow */
+    .row-yellow {
+        background-color: #827717;
+    }
+
+    .row-yellow:hover {
+        background-color: #9e9d24;
+    }
+
+    .row-yellow.active {
+        background-color: #ffeb3b;
+        box-shadow: 0 0 20px #ffeb3b;
+    }
+
+
+    /* Row 2 - Red */
+    .row-red {
+        background-color: #8b0000;
+    }
+
+    .row-red:hover {
+        background-color: #c62828;
+    }
+
+    .row-red.active {
+        background-color: #ff1744;
+        box-shadow: 0 0 20px #ff1744;
+    }
+
+</style>
+
+</head> <body>
+
+<h1>ESP32 Matrix Controller</h1>
+
+<div id="status" class="status disconnected">
+    Connecting to MQTT broker...
+</div>
+
+
+<!-- ============================================
+     3x3 LED Matrix
+     ============================================ -->
+
+<div class="matrix">
+
+    <!-- Row 0 - Green -->
+    <div class="led row-green"
+         onclick="sendLED(0, 0, this)">
+    </div>
+
+    <div class="led row-green"
+         onclick="sendLED(0, 1, this)">
+    </div>
+
+    <div class="led row-green"
+         onclick="sendLED(0, 2, this)">
+    </div>
+
+
+    <!-- Row 1 - Yellow -->
+    <div class="led row-yellow"
+         onclick="sendLED(1, 0, this)">
+    </div>
+
+    <div class="led row-yellow"
+         onclick="sendLED(1, 1, this)">
+    </div>
+
+    <div class="led row-yellow"
+         onclick="sendLED(1, 2, this)">
+    </div>
+
+
+    <!-- Row 2 - Red -->
+    <div class="led row-red"
+         onclick="sendLED(2, 0, this)">
+    </div>
+
+    <div class="led row-red"
+         onclick="sendLED(2, 1, this)">
+    </div>
+
+    <div class="led row-red"
+         onclick="sendLED(2, 2, this)">
+    </div>
+
+</div>
+
+
+<script>
+
+    // ============================================
+    // MQTT Configuration
+    // ============================================
+
+    const MQTT_TOPIC = "TEST_LED/matrix/led";
+
+    // HiveMQ Public Broker via WebSockets
+    const MQTT_URL = "wss://broker.hivemq.com:8884/mqtt";
+
+    const statusDiv = document.getElementById("status");
+
+
+    // ============================================
+    // MQTT Connection
+    // ============================================
+
+    console.log("Connecting to MQTT:", MQTT_URL);
+
+    const client = mqtt.connect(MQTT_URL, {
+
+        // Generate a unique client ID for the browser
+        clientId:
+            "WebClient-" +
+            Math.random()
+                .toString(16)
+                .substring(2, 10),
+
+        clean: true,
+
+        connectTimeout: 10000,
+
+        reconnectPeriod: 5000
+    });
+
+
+    // ============================================
+    // MQTT Connected
+    // ============================================
+
+    client.on("connect", () => {
+
+        console.log("MQTT connected.");
+
+        statusDiv.textContent = "Connected & Ready";
+        statusDiv.className = "status connected";
+
+    });
+
+
+    // ============================================
+    // MQTT Connection Closed
+    // ============================================
+
+    client.on("close", () => {
+
+        console.log("MQTT connection closed.");
+
+        statusDiv.textContent = "Connection lost";
+        statusDiv.className = "status disconnected";
+
+    });
+
+
+    // ============================================
+    // MQTT Error
+    // ============================================
+
+    client.on("error", (error) => {
+
+        console.error("MQTT error:", error);
+
+        statusDiv.textContent = "MQTT error";
+        statusDiv.className = "status disconnected";
+
+    });
+
+
+    // ============================================
+    // Send LED Command
+    // ============================================
+
+    function sendLED(row, col, element) {
+
+        // Remove the active state from all LEDs
+        document
+            .querySelectorAll(".led")
+            .forEach(led =>
+                led.classList.remove("active")
+            );
+
+
+        // Highlight the selected LED
+        element.classList.add("active");
+
+
+        // Create MQTT payload
+        // Example: "0,2"
+        const payload = `${row},${col}`;
+
+        console.log("Sending MQTT:", payload);
+
+
+        // Publish message to the MQTT broker
+        client.publish(
+            MQTT_TOPIC,
+            payload,
+            {
+                qos: 0,
+                retain: false
+            },
+            (error) => {
+
+                if (error) {
+
+                    console.error(
+                        "Failed to send MQTT message:",
+                        error
+                    );
+
+                } else {
+
+                    console.log(
+                        "MQTT message sent:",
+                        payload
+                    );
+
+                }
+            }
+        );
+    }
+
+</script>
+
+</body> </html>
